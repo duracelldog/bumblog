@@ -44,15 +44,18 @@ const GET_LISTS = gql`
 
 
 function BoardHome(){
-    const {loading, data} = useQuery(GET_LISTS, {
-        variables: {
-            target: "title",
-            word: "블로그",
-            limit: 10
-        }
-    });
     const [boardList, setBoardList] = useState<boardListType[]>([]);
-    console.log('data', data);
+    const [listArgs, setListArgs] = useState({
+        target: "title",
+        word: "",
+        limit: 10
+    })
+
+    const {loading, data, refetch} = useQuery(GET_LISTS, {
+        variables: listArgs,
+        notifyOnNetworkStatusChange: true
+    });
+    
 
     const activateTagButton = (e:React.MouseEvent<HTMLLIElement, MouseEvent>) =>{
         document.querySelectorAll('.bb-board-home__tags-ul > li').forEach((list)=>{
@@ -61,12 +64,24 @@ function BoardHome(){
         e.currentTarget.classList.add('on');
 
         console.log('e.currentTarget', e.currentTarget.innerText);
-        console.log('boardList', boardList);
+
+        const word = e.currentTarget.innerText === '모두' ? '' : e.currentTarget.innerText;
+
+        setListArgs({
+            target: "tags",
+            word,
+            limit: 10
+        });
+
+        console.log('loading1111', loading);
+
+        refetch();
     }
 
     useEffect(()=>{
+        console.log('loading', loading)
         if(!loading){
-            // setBoardList(data.boardLists)
+            setBoardList(data.boardLists)
         }
     }, [loading])
 
@@ -79,7 +94,7 @@ function BoardHome(){
         <main className="bb-board-home__main">
             <section className="bb-board-home__hero-section">
                 <div>
-                    <h1>Bumblog</h1>
+                    <h1 onClick={() => refetch()}>Bumblog</h1>
                     <div className="bb-board-home__hero-desc">
                         생각나는 것을 기록하고 저장하는 공간
                     </div>

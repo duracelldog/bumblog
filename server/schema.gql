@@ -52,7 +52,7 @@ type TokenModel {
 }
 
 type Query {
-  boardLists(limit: Float!, word: String!, target: String!): [Board!]!
+  boardLists(limit: Int!, word: String!, target: String!): [Board!]!
   boardList(id: Int!): Board
   users: [User!]!
   user(id: Int!): User

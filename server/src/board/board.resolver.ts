@@ -11,7 +11,7 @@ export class BoardResolver {
     ){}
 
     @Query(() => [Board])
-    async boardLists(@Args('target') target: string, @Args('word') word: string, @Args('limit') limit: number){
+    async boardLists(@Args('target') target: string, @Args('word') word: string, @Args('limit', {type: () => Int}) limit: number){
         return await this.boardService.findAllBoardList(target, word, limit);
     }
 
