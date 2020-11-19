@@ -1,25 +1,31 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import BoardHome from './components/board/BoardHome';
+import BoardView from './components/board/BoardView';
+import BoardWrite from './components/board/BoardWrite';
+import Footer from './components/share/Footer';
+import Header from './components/share/Header';
+import Login from './components/share/Login';
+import Modal from './components/share/Modal';
+import './App.scss';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.!!!ssadadasas1111
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <div className="bb-body">
+      <BrowserRouter>
+        <Header />
+        <Modal />
+        <Switch>
+          <Route exact path="/" component={BoardHome} />
+          <Route path="/login" component={Login} />
+          <Route path="/board/write/:id" component={BoardWrite} />
+          <Route path="/board/write" component={BoardWrite} />
+          <Route path="/board/view/:id" component={BoardView} />
+          <Route path="/board" component={BoardHome} />
+        </Switch>
+        <Footer />
+      </BrowserRouter>
+    </div>  
   );
 }
 

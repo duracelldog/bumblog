@@ -11,20 +11,32 @@ type User {
   board: [Board!]!
 }
 
+type BoardImage {
+  id: Int!
+  originalName: String!
+  fileName: String!
+  boardId: Float!
+  board: Board!
+}
+
 type Board {
   id: Int!
   title: String!
   tags: String!
   contents: String!
   userId: Float!
-  createdAt: String
-  updatedAt: String
-  t_originalFileName: String
-  t_uploadFileName: String
-  c_originalFileName: String
-  c_uploadFileName: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  t_originalName: String
+  t_fileName: String
   user: User!
+  boardImages: [BoardImage!]!
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type ProfileModel {
   id: Int!
@@ -40,7 +52,7 @@ type TokenModel {
 }
 
 type Query {
-  boardLists: [Board!]!
+  boardLists(limit: Float!, word: String!, target: String!): [Board!]!
   boardList(id: Int!): Board
   users: [User!]!
   user(id: Int!): User

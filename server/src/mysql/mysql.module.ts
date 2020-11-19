@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { bumblog } from '../config/bumblog.config';
 import { Board } from '../board/entities/board.entity';
 import { User } from '../user/entities/user.entity';
+import { BoardImage } from 'src/board/entities/board-image.entity';
 
 @Module({
     imports: [
@@ -13,7 +14,7 @@ import { User } from '../user/entities/user.entity';
             username: bumblog.mysql.id,
             password: bumblog.mysql.password,
             database: 'bumblog',
-            entities: [Board, User],
+            entities: [Board, User, BoardImage],
             synchronize: false
         })
     ]

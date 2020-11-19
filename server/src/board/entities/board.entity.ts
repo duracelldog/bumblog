@@ -1,6 +1,7 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { User } from 'src/user/entities/user.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, ManyToMany, OneToOne } from 'typeorm';
+import { BoardImage } from './board-image.entity';
 
 @ObjectType()
 @Entity()
@@ -25,35 +26,31 @@ export class Board{
     @Column()
     userId: number;
 
-    @Field(type => String, {nullable: true})
-    @Column('timestamptz')
-    @CreateDateColumn()
-    createdAt: string;
-
-    @Field(type => String, {nullable: true})
-    @Column('timestamptz')
-    @CreateDateColumn()
-    updatedAt: string;
-
-    @Field({nullable: true})
+    @Field(type => Date, {nullable: true, defaultValue: Date.now()})
     @Column()
-    t_originalFileName: string;
+    createdAt: Date;
 
-    @Field({nullable: true})
+    @Field(type => Date, {nullable: true, defaultValue: Date.now()})
     @Column()
-    t_uploadFileName: string;
+    updatedAt: Date;
 
-    @Field({nullable: true})
+    @Field({nullable: true, defaultValue: ""})
     @Column()
-    c_originalFileName: string;
+    t_originalName: string;
 
-    @Field({nullable: true})
+    @Field({nullable: true, defaultValue: ""})
     @Column()
-    c_uploadFileName: string;
+    t_fileName: string;
 
     @Field(type => User)
     @ManyToOne(() => User, user => user.board, {
         onDelete: 'CASCADE'
     })
     user: User;
+
+    @Field(type => [BoardImage])
+    @OneToMany(() => BoardImage, boardImage => boardImage.board, {
+        onDelete: 'CASCADE'
+    })
+    boardImages: BoardImage[];
 }

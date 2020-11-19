@@ -7,6 +7,6 @@ export class BoardController {
 
     @Get()
     getListAll(){
-        return this.boardService.findAll();
+        // return this.boardService.findAllBoardList();
     }
 }

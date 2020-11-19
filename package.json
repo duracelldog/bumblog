@@ -2,10 +2,13 @@
   "name": "bumblog",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:dev": "concurrently \"cd client && npm run start\" \"cd server && npm run start:dev\"",
+    "build": "concurrently \"cd client %% npm run build\" \"cd server && npm run build\""
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^5.3.0"
+  }
 }

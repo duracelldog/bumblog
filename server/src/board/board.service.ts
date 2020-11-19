@@ -12,11 +12,19 @@ export class BoardService {
         private boardRepository: Repository<Board>
     ){}
 
-    findAll(): Promise<Board[]>{
-        return this.boardRepository.find({relations: ['user']});
+    findAllBoardList(target: string, word: string, limit: number): Promise<Board[]>{
+        // return this.boardRepository.find({relations: ['user']});
+
+        return this.boardRepository
+            .createQueryBuilder('board')
+            .leftJoinAndSelect('board.user', 'user')
+            .leftJoinAndSelect('board.boardImages', 'boardImage')
+            .where(`board.${target} like :word`, {word: `%${word}%`})
+            .take(limit)
+            .getMany();
     }
 
-    async findOne(id: number): Promise<Board>{
+    async findOneBoardList(id: number): Promise<Board>{
         try{
             const result = await this.boardRepository.findOne(id, {relations: ['user']});
             if(!result) throw new NotFoundException(`ID: ${id} is not found`);
@@ -26,17 +34,16 @@ export class BoardService {
         }
     }
 
-    create(boardData: CreateBoardInput): Promise<Board>{
+    createBoardList(boardData: CreateBoardInput): Promise<Board>{
         return this.boardRepository.save(boardData);
     }
 
-    async update(boardData: UpdateBoardInput): Promise<Boolean>{
+    async updateBoardList(boardData: UpdateBoardInput): Promise<Boolean>{
         try{
-            await this.findOne(boardData.id);
+            await this.findOneBoardList(boardData.id);
 
             const board = new Board();
             board.title = boardData.title;
-            board.tags = boardData.tags;
             board.contents = boardData.contents;
             board.userId = boardData.userId;
 
@@ -48,9 +55,9 @@ export class BoardService {
         }
     }
 
-    async delete(id: number): Promise<Boolean>{
+    async deleteBoardList(id: number): Promise<Boolean>{
         try{
-            await this.findOne(id);
+            await this.findOneBoardList(id);
             await this.boardRepository.delete(id);
             return Promise.resolve(true);
         }catch(err){
