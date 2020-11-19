@@ -1,0 +1,96 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: Int!
+  email: String!
+  password: String!
+  name: String!
+  admin: Float!
+  board: [Board!]!
+}
+
+type Board {
+  id: Int!
+  title: String!
+  tags: String!
+  contents: String!
+  userId: Float!
+  createdAt: String
+  updatedAt: String
+  t_originalFileName: String
+  t_uploadFileName: String
+  c_originalFileName: String
+  c_uploadFileName: String
+  user: User!
+}
+
+type ProfileModel {
+  id: Int!
+  email: String!
+  name: String!
+  admin: Float!
+  iat: Float!
+  exp: Float!
+}
+
+type TokenModel {
+  access_token: String!
+}
+
+type Query {
+  boardLists: [Board!]!
+  boardList(id: Int!): Board
+  users: [User!]!
+  user(id: Int!): User
+  getProfile(access_token: String!): ProfileModel!
+}
+
+type Mutation {
+  createBoardList(boardData: CreateBoardInput!): Board!
+  updateBoardList(boardData: UpdateBoardInput!): Boolean!
+  deleteBoardList(id: Int!): Boolean!
+  createUser(userData: CreateUserInput!): User!
+  updateUser(userData: UpdateUserInput!): Boolean!
+  deleteUser(id: Int!): Boolean!
+  login(password: String!, email: String!): TokenModel!
+}
+
+input CreateBoardInput {
+  title: String!
+  tags: String!
+  contents: String!
+  userId: Int!
+  t_originalFileName: String
+  t_uploadFileName: String
+  c_originalFileName: String
+  c_uploadFileName: String
+}
+
+input UpdateBoardInput {
+  id: Int!
+  title: String!
+  tags: String!
+  contents: String!
+  userId: Int!
+  t_originalFileName: String
+  t_uploadFileName: String
+  c_originalFileName: String
+  c_uploadFileName: String
+}
+
+input CreateUserInput {
+  email: String!
+  password: String!
+  name: String!
+  admin: Float!
+}
+
+input UpdateUserInput {
+  id: Int!
+  email: String!
+  password: String!
+  name: String!
+  admin: Float
+}
