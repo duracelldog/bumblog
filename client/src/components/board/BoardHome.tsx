@@ -76,7 +76,7 @@ function BoardHome(){
     }, [listArgs])
 
     useEffect(()=>{
-        if(!loading){
+        if(!loading && data){
             setBoardList(data.boardLists)
         }
     }, [loading])

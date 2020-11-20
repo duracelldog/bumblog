@@ -47,16 +47,12 @@ type ProfileModel {
   exp: Float!
 }
 
-type TokenModel {
-  access_token: String!
-}
-
 type Query {
   boardLists(limit: Int = 10, word: String = "", target: String = "title"): [Board!]!
   boardList(id: Int!): Board
   users: [User!]!
   user(id: Int!): User
-  getProfile(access_token: String!): ProfileModel!
+  getProfile(token: String!): ProfileModel!
 }
 
 type Mutation {
@@ -66,7 +62,8 @@ type Mutation {
   createUser(userData: CreateUserInput!): User!
   updateUser(userData: UpdateUserInput!): Boolean!
   deleteUser(id: Int!): Boolean!
-  login(password: String!, email: String!): TokenModel!
+  login(password: String!, email: String!): User!
+  logout: Boolean!
 }
 
 input CreateBoardInput {

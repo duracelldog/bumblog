@@ -4,7 +4,12 @@ import { GraphQLModule } from '@nestjs/graphql';
 @Module({
     imports: [
         GraphQLModule.forRoot({
-            autoSchemaFile: 'schema.gql'
+            autoSchemaFile: 'schema.gql',
+            cors: {
+                credentials: true,
+                origin: true
+            },
+            context: ({req, res}) => ({req, res}),
         })
     ]
 })

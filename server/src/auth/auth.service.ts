@@ -43,6 +43,8 @@ export class AuthService {
         }
     }
 
+
+
     async decode(token: string){
         try{
             const user = this.jwtService.decode(token);
