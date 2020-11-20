@@ -14,7 +14,6 @@ export class BoardService {
 
     findAllBoardList(target: string, word: string, limit: number): Promise<Board[]>{
         // return this.boardRepository.find({relations: ['user']});
-
         return this.boardRepository
             .createQueryBuilder('board')
             .leftJoinAndSelect('board.user', 'user')

@@ -1,58 +1,81 @@
 import React, { useEffect, useState } from 'react';
 import {Link, match, RouteChildrenProps} from 'react-router-dom';
-import axios from 'axios';
 import {boardListType} from './BoardHome';
 import {useHistory} from 'react-router-dom';
 import defaultThumbnail from '../../assets/images/board/default_thumbnail.jpg';
 import {BsPencilSquare, BsTrash} from 'react-icons/bs'
 import path from 'path';
 import useModal from '../../redux/hooks/useModal';
+import { gql, useMutation, useQuery } from '@apollo/client';
 
-type ParamsType = {
-    id: string;
-}
+const GET_LIST = gql`
+    query GetBoardList($id: Int!){
+        boardList(id: $id){
+            id
+            tags
+            title
+            contents
+            boardImages{
+                fileName
+            }
+            user{
+                name
+            }
+        }
+    }
+`;
 
-function BoardView(props: RouteChildrenProps<ParamsType>){
+const DELETE_LIST = gql`
+    mutation DeleteBoardList($id: Int!){
+        deleteBoardList(id: $id)
+    }
+`;
 
-    const {onOpenConfirmModal, onCloseModal} = useModal();
+function BoardView(props: RouteChildrenProps<{id: string}>){
 
-    const [listData, setListData] = useState<boardListType>({
-        id: '',
-        tags: '',
-        title: '',
-        description: '',
-        t_originalName: '',
-        t_fileName: '',
-        boardImages: [],
-        user: {
-            name: ''
+    const boardId = props.match?.params.id ? parseInt(props.match?.params.id) : 1;
+    const {onOpenConfirmModal, onOpenAlertModal, onCloseModal} = useModal();
+    const GBLResult = useQuery(GET_LIST, {
+        variables: {
+            id: boardId
         }
     });
-
-    const [thumbnailImageState, setThumbnailImageState] = useState('');
-    const history = useHistory();
+    const [deleteBoardList, DBLResult] = useMutation(DELETE_LIST);
     
-    useEffect(()=>{
+    const [listData, setListData] = useState<boardListType>();
+    const history = useHistory();
+    const [thumbnailImageState, setThumbnailImageState] = useState('');
 
-        window.scrollTo(0, 0);
+    useEffect(() => {
 
-        axios({
-            method: 'get',
-            url: `/api/board/list/${props.match?.params.id}`
-        }).then((res) =>{
-            if(res.data){
-
-                setListData(res.data);
-                const thumbnailImage = res.data.thumbnailImage[0];
-
-                if(thumbnailImage){
-                    setThumbnailImageState(path.resolve('./uploads', thumbnailImage.filename));
+        if(!GBLResult.loading){
+            if(GBLResult.data){
+                setListData(GBLResult.data.boardList);
+                if(GBLResult.data.t_fileName){
+                    setThumbnailImageState(path.resolve('./uploads', GBLResult.data.t_fileName));
                 }else{
                     setThumbnailImageState(defaultThumbnail);   
                 }
-                
             }
-        });
+        }
+
+        
+    }, [GBLResult.loading]);
+
+    useEffect(() => {
+        console.log('DBLResult.data', DBLResult.data);
+
+        if(!DBLResult.loading){
+            if(DBLResult.data){
+                onCloseModal();
+                history.push('/board');
+            }
+        }        
+    }, [DBLResult.loading])
+    
+    useEffect(()=>{
+        window.scrollTo(0, 0);
+        return () => { console.log('cleanup') };
     }, []);
 
 
@@ -64,52 +87,56 @@ function BoardView(props: RouteChildrenProps<ParamsType>){
             confirm: {
                 isShow: true,
                 func: () => {
-                    axios({
-                        method: 'delete',
-                        url: '/api/board/list',
-                        data: listData
-                    }).then((res) =>{
-                        console.log('deleteRes', res.data);
-                        onCloseModal();
-                        history.push('/board');
-                    });
+                    deleteBoardList({variables: {
+                        id: boardId
+                    }});
                 }
             }
         });   
     }
 
-
-    return (
-        <main className="bb-board-view__main">
-            <section className="bb-board-view__hero-section" style={{backgroundImage: `url(${thumbnailImageState})`}}>
-                <div className="bb-board-view__hero-section-title-wrapper">
-                    <h1>{listData?.title}</h1>
-                    <div className="bb-board-view__subtitle">
-                        {/* {listData?.subTitle} */}
+    if(!listData){
+        return (
+            <main className="bb-board-view__main"></main>
+        )
+    }else{
+        return (
+            <main className="bb-board-view__main">
+                <section className="bb-board-view__hero-section" style={{backgroundImage: `url(${thumbnailImageState})`}}>
+                    <div className="bb-board-view__hero-section-title-wrapper">
+                        <h1>{listData?.title}</h1>
+                        <div className="bb-board-view__subtitle">
+                            {/* {listData?.subTitle} */}
+                        </div>
                     </div>
-                </div>
-            </section>
-            <section className="bb-board-view__article-section">
-                <article className="bb-board-view__article tui-editor-contents" dangerouslySetInnerHTML={{__html: listData.description}}></article>
-            </section>
-            <section className="bb-board-view__buttons-section">
-                <ul className="bb-board-view__update-btns">
-                    <li>
-                        <button>
-                            <Link to={`/board/write/${props.match?.params.id}`}>
-                                <BsPencilSquare className="bb-board-view__pencil-icon" />
-                            </Link>
-                        </button>
-                    </li>
-                    <li>
-                        <button onClick={handleDelete}>
-                            <BsTrash className="bb-board-view__tresh-icon" />
-                        </button>
-                    </li>
-                </ul>
-            </section>
-        </main>
-    );
+                </section>
+                <section className="bb-board-view__article-section">
+                    <article className="bb-board-view__article tui-editor-contents" dangerouslySetInnerHTML={{__html: listData.contents}}></article>
+                </section>
+                <section className="bb-board-view__buttons-section">
+                    <ul className="bb-board-view__update-btns">
+                        <li>
+                            <button>
+                                <Link to={`/board/write/${props.match?.params.id}`}>
+                                    <BsPencilSquare className="bb-board-view__pencil-icon" />
+                                </Link>
+                            </button>
+                        </li>
+                        <li>
+                            <button onClick={handleDelete}>
+                                <BsTrash className="bb-board-view__tresh-icon" />
+                            </button>
+                        </li>
+                    </ul>
+                </section>
+            </main>
+        );
+    }
+
+    
+
+
+    
 }
 
 export default BoardView;

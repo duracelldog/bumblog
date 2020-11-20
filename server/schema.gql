@@ -30,7 +30,7 @@ type Board {
   t_originalName: String
   t_fileName: String
   user: User!
-  boardImages: [BoardImage!]!
+  boardImages: [BoardImage!]
 }
 
 """
@@ -52,7 +52,7 @@ type TokenModel {
 }
 
 type Query {
-  boardLists(limit: Int!, word: String!, target: String!): [Board!]!
+  boardLists(limit: Int = 10, word: String = "", target: String = "title"): [Board!]!
   boardList(id: Int!): Board
   users: [User!]!
   user(id: Int!): User

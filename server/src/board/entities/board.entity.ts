@@ -48,7 +48,7 @@ export class Board{
     })
     user: User;
 
-    @Field(type => [BoardImage])
+    @Field(type => [BoardImage], {nullable: true})
     @OneToMany(() => BoardImage, boardImage => boardImage.board, {
         onDelete: 'CASCADE'
     })

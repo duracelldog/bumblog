@@ -606,6 +606,7 @@ input[class*=decriptionInputFileTag]{
 // BoardView
 .bb-board-view__main{
   padding-top: 50px;
+  min-height: 80vh;
 }
 .bb-board-view__hero-section{
   position: relative;

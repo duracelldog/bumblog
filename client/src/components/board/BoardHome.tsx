@@ -1,15 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import BoardList from './BoardList';
 import {Link} from 'react-router-dom';
-import axios from 'axios';
 import {BsPencilSquare} from 'react-icons/bs';
 import { gql, useQuery } from '@apollo/client';
 
 export type boardListType = {
     id: string;
-    tags: string;
     title: string;
-    description: string;
+    tags: string;
+    contents: string;
+    createdAt: number;
+    updatedAt: number;
     user: {
         name: string;
     }
@@ -23,33 +24,30 @@ export type boardImagesType = {
 }
 
 const GET_LISTS = gql`
-    query GetBoardList($target: String!, $word: String!, $limit: Int!) {
+    query GetBoardLists($target: String, $word: String, $limit: Int) {
         boardLists(target: $target, word: $word, limit: $limit){
             id
             title
             tags
             createdAt
             t_fileName
-            t_originalName
             user{
                 name
-            }
-            boardImages{
-                originalName
-                fileName
             }
         }
     }
 `;
 
+type ArgumentsType = {
+    target: string;
+    word: string;
+    limit: number;
+}
+
 
 function BoardHome(){
     const [boardList, setBoardList] = useState<boardListType[]>([]);
-    const [listArgs, setListArgs] = useState({
-        target: "title",
-        word: "",
-        limit: 10
-    })
+    const [listArgs, setListArgs] = useState<ArgumentsType>();
 
     const {loading, data, refetch} = useQuery(GET_LISTS, {
         variables: listArgs,
@@ -63,23 +61,21 @@ function BoardHome(){
         });
         e.currentTarget.classList.add('on');
 
-        console.log('e.currentTarget', e.currentTarget.innerText);
-
+        // console.log('e.currentTarget', e.currentTarget.innerText);
         const word = e.currentTarget.innerText === '모두' ? '' : e.currentTarget.innerText;
 
         setListArgs({
             target: "tags",
             word,
             limit: 10
-        });
-
-        console.log('loading1111', loading);
-
-        refetch();
+        });   
     }
 
     useEffect(()=>{
-        console.log('loading', loading)
+        refetch();
+    }, [listArgs])
+
+    useEffect(()=>{
         if(!loading){
             setBoardList(data.boardLists)
         }
@@ -94,7 +90,7 @@ function BoardHome(){
         <main className="bb-board-home__main">
             <section className="bb-board-home__hero-section">
                 <div>
-                    <h1 onClick={() => refetch()}>Bumblog</h1>
+                    <h1>Bumblog</h1>
                     <div className="bb-board-home__hero-desc">
                         생각나는 것을 기록하고 저장하는 공간
                     </div>

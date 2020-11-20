@@ -59,7 +59,7 @@ function BoardWrite(props: RouteChildrenProps<ParamsType>){
                 setTempThumbnailImagePathState(path.resolve('./uploads', res.data.t_fileName.split(',')[0]));
             }
 
-            setTextEditorContentsState(res.data.description);
+            setTextEditorContentsState(res.data.contents);
         });
     }
 
@@ -320,9 +320,6 @@ function BoardWrite(props: RouteChildrenProps<ParamsType>){
 
         setIsLoginState(authState.email);
     }, [authState])
-
-    
-
 
     return (
         <main className="bb-board-write__main">

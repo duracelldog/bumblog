@@ -12,9 +12,8 @@ function BoardList({data}: {data: boardListType}){
     const [date, setDate] = useState('');
     const [thumbImg, setThumbImg] = useState(defaultThumbnail);
 
-    const dateForm = () =>{
-        const timeStamp = data.id.toString().substring(0,8);
-        const date = new Date(parseInt(timeStamp, 16) * 1000);
+    const createDateText = (createdAt: number) =>{
+        const date = new Date(createdAt);
 
         const year = date.getUTCFullYear(); // 2020
         const month = checkDate(date.getUTCMonth());
@@ -41,8 +40,8 @@ function BoardList({data}: {data: boardListType}){
         if(data.t_fileName){
             setThumbImg(path.resolve('./uploads', data.t_fileName.split(',')[0]));
         }
-
-        setDate(dateForm());
+        
+        setDate(createDateText(data.createdAt));
     }, []);
 
     return (
