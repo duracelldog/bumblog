@@ -65,7 +65,6 @@ ALTER TABLE board_image
 
 -- END SQL ---------------------------------------------------------------- 
 
-insert into user(email, password, name, admin) values('tlsqjarms@gmail.com', '1234', '신범근', 1);
 insert into user(email, password, name, admin) values('bkshin@gmail.com', '1234', '홍길동', 0);
 insert into user(email, password, name, admin) values('bkshin1@gmail.com', '1234', '이효진', 0);
 

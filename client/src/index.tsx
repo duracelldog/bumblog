@@ -6,16 +6,13 @@ import reportWebVitals from './reportWebVitals';
 import {Provider} from 'react-redux';
 import {createStore} from 'redux';
 import rootReducer from './redux/modules';
-import { ApolloClient, ApolloProvider, createHttpLink, HttpLink, InMemoryCache } from '@apollo/client';
+import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
+import { links } from './graphql/links';
 
 const store = createStore(rootReducer);
 
 const client = new ApolloClient({
-  
-  link: new HttpLink({
-    uri: '/graphql',
-    credentials: "include"
-  }),
+  link: links,
   cache: new InMemoryCache()
 })
 

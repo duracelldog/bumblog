@@ -5,12 +5,14 @@ import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './entities/user.entity';
 import * as BCRYPT from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(User)
-        private userRepository: Repository<User>
+        private userRepository: Repository<User>,
+        private jwtService: JwtService
     ){}
 
     findAll(): Promise<User[]>{
@@ -37,21 +39,38 @@ export class UserService {
         }
     }
 
-    create(userData: CreateUserInput): Promise<User>{
+    async create(userData: CreateUserInput, context): Promise<User>{
+        try{
+            const emailCheck = await this.userRepository.findOne({email: userData.email});
+            if(emailCheck) throw new Error(`${userData.email}이 이미 존재합니다.`);
 
-        const user = new User();
-        user.email = userData.email;
-        user.name = userData.name;
-        user.admin = userData.admin;
+            const user = new User();
+            user.email = userData.email;
+            user.name = userData.name;
+            user.admin = 0;
 
-        // 암호화
-        const saltRounds = 10;
-        const salt = BCRYPT.genSaltSync(saltRounds);
-        const hash = BCRYPT.hashSync(userData.password, salt);
+            // 암호화
+            const saltRounds = 10;
+            const salt = BCRYPT.genSaltSync(saltRounds);
+            const hash = BCRYPT.hashSync(userData.password, salt);
 
-        user.password = hash;
+            user.password = hash;
 
-        return this.userRepository.save(user);
+            // 토큰 저장
+            const token = this.jwtService.sign({
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                admin: user.admin
+            });
+
+            const exdays = 1;
+            context.res.cookie('token', token, {httpOnly: true, expires: new Date(Date.now() + (exdays*24*60*60*1000))});
+
+            return this.userRepository.save(user);
+        }catch(err){
+            return Promise.reject(err);
+        }
     }
 
     async update(userData: UpdateUserInput): Promise<Boolean>{

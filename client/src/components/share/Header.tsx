@@ -3,15 +3,21 @@ import axios from 'axios';
 import {Link, useHistory} from 'react-router-dom';
 import {BiMenu, BiUser} from 'react-icons/bi';
 import useAuth from '../../redux/hooks/useAuth';
+import { gql, useMutation } from '@apollo/client';
+
+const LOGOUT = gql`
+    mutation Logout{
+        logout
+    }
+`;
 
 function Header(){
 
     const history = useHistory();
-
     const mobileMenuRef = useRef<HTMLUListElement>(null);
     const subMenuRef = useRef<HTMLDivElement>(null);
-
     const {authState, onLogout} = useAuth();
+    const [logout, LOResult] = useMutation(LOGOUT);
 
     // MainMenu 모바일에서 메뉴 펄치기 버튼
     const toggleMainMenu = (event: any , status: Number = 2) =>{
@@ -61,7 +67,7 @@ function Header(){
     }
 
     const bodyFunc = (e: any) =>{
-        console.log('bodyevent 실행', e.srcElement.className);
+        // console.log('bodyevent 실행', e.srcElement.className);
         const exClassName = [
             'bb-header__sub-menu-wrapper',
             'bb-header__sub-menu_login-massage',
@@ -83,17 +89,10 @@ function Header(){
         }
     }
 
-    const logout = () =>{
-        axios({
-            method: 'delete',
-            url: '/api/auth/login'
-        }).then((res) =>{
-            console.log('post_res', res.data);
-            if(res.data.status){
-                onLogout();
-                history.push('/');
-            }
-        });
+    const onClickLogout = () =>{
+        logout(); // graphQL
+        onLogout(); // Redux State
+        history.push('/');
     }
 
     useEffect(()=>{
@@ -127,7 +126,7 @@ function Header(){
                                 )}
                                 <ul className="bb-header__sub-menu-box-ul">
                                     {authState.name !== '' ? (
-                                            <li className="bb-header__sub-menu-box-li" onClick={logout}>Logout</li>
+                                            <li className="bb-header__sub-menu-box-li" onClick={onClickLogout}>Logout</li>
                                         ) : (
                                             <li className="bb-header__sub-menu-box-li">
                                                 <Link to="/login">Login</Link>

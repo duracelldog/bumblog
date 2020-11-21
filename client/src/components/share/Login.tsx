@@ -2,11 +2,42 @@ import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import {RouteChildrenProps} from 'react-router-dom';
 import useAuth from '../../redux/hooks/useAuth';
+import { gql, useMutation } from '@apollo/client';
+
+type CreateUserInput = {
+    email: string;
+    password: string;
+    name: string;
+}
+
+const LOGIN = gql`
+    mutation Login($email: String!, $password: String!){
+        login(email: $email, password: $password){
+            email
+            name
+        }
+    }
+`;
+const CREATE_USER = gql`
+  mutation CreateUser($userData: CreateUserInput!){
+      createUser(userData: $userData){
+        email
+        name
+      }
+  }  
+`;
+
 
 type ParamsType = {
     redirect: string;
 }
 function Login(props : RouteChildrenProps<ParamsType>){
+
+    const [login, loginResult] = useMutation(LOGIN);
+    const [createUser, createUserResult] = useMutation<{
+        createUser: CreateUserInput,
+        userData: CreateUserInput
+    }>(CREATE_USER);
 
     const [userInfoState, setUserInfoState] = useState({
         email: '',
@@ -48,54 +79,66 @@ function Login(props : RouteChildrenProps<ParamsType>){
         e.preventDefault();
 
         if(modeState === 'LOGIN'){ // 로그인
-            axios({
-                method: 'post',
-                url: '/api/auth/login',
-                withCredentials: true,
-                data: userInfoState
-            }).then((res) =>{
-                console.log('post_res', res.data);
-
-                axios({
-                    method: 'get',
-                    url: '/api/auth/check'
-                }).then((res) =>{
-                    console.log('post_res', res.data);
-                
-                    if(res.data.status){ // Yes Login
-                        const loginData = {
-                            email: res.data.info.email,
-                            name: res.data.info.name
-                        }
-                        onLogin(loginData);
-                    }
-
-                    if(redirctState === ''){
-                        props.history.goBack();
-                    }else{
-                        props.history.push(redirctState);
-                    }
-                });
-                
+            login({
+                variables: {
+                    email: userInfoState.email,
+                    password: userInfoState.password
+                }
             });
         }else{ // 신규 가입
-            axios({
-                method: 'post',
-                url: '/api/auth/user',
-                data: userInfoState
-            }).then((res) =>{
-                console.log('post_res', res.data);
-                initLoginData();
-            });
+            createUser({
+                variables: {
+                    userData: userInfoState
+                }
+            })
         }
     }
+
+     useEffect(()=> { // 로그인
+        if(!loginResult.loading && loginResult.data){
+
+            const payload = {
+                email: loginResult.data.login.email,
+                name: loginResult.data.login.name
+            }
+
+            onLogin(payload);
+
+            if(redirctState === ''){
+                props.history.goBack();
+            }else{
+                props.history.push(redirctState);
+            }
+        }
+    }, [loginResult.loading]);
+
+    useEffect(()=> { // 신규 가입
+        if(!createUserResult.loading && createUserResult.data){
+            const payload = {
+                email: createUserResult.data.createUser.email,
+                name: createUserResult.data.createUser.name
+            }
+
+            onLogin(payload);
+            
+            if(redirctState === ''){
+                props.history.goBack();
+            }else{
+                props.history.push(redirctState);
+            }
+        }
+    }, [createUserResult.loading]);
 
     useEffect(()=>{
         const redirectValue = new URLSearchParams(document.location.search).get('redirect')
         if(redirectValue)
             setRedirectState(redirectValue);
 
-        console.log('redirectValue', redirectValue);
+        // console.log('redirectValue', redirectValue);
+
+        return () =>{
+            initLoginData();
+        }
 
     }, []);
 
@@ -119,6 +162,9 @@ function Login(props : RouteChildrenProps<ParamsType>){
                     <input type="text" name="email" placeholder="E-Mail" value={userInfoState.email} onChange={setLoginState} />
                     {modeState !== 'LOGIN' && <input type="text" name="name" value={userInfoState.name} placeholder="Name" onChange={setLoginState} /> }
                     <input type="password" name="password" placeholder="Password" value={userInfoState.password} onChange={setLoginState} />
+                </div>
+                <div>
+                    {loginResult.error?.message}
                 </div>
                 <div className="bb-login__mode-toggle">
                     <span className="bb-login__toggle-bar" ref={toggleBarRef}>{modeState}</span>

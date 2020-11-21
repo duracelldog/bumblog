@@ -38,13 +38,22 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type UserModel {
+  id: Int
+  email: String
+  password: String
+  name: String
+  admin: Float
+  board: [Board!]
+}
+
 type ProfileModel {
-  id: Int!
-  email: String!
-  name: String!
-  admin: Float!
-  iat: Float!
-  exp: Float!
+  id: Int
+  email: String
+  name: String
+  admin: Float
+  iat: Float
+  exp: Float
 }
 
 type Query {
@@ -52,7 +61,6 @@ type Query {
   boardList(id: Int!): Board
   users: [User!]!
   user(id: Int!): User
-  getProfile(token: String!): ProfileModel!
 }
 
 type Mutation {
@@ -62,8 +70,9 @@ type Mutation {
   createUser(userData: CreateUserInput!): User!
   updateUser(userData: UpdateUserInput!): Boolean!
   deleteUser(id: Int!): Boolean!
-  login(password: String!, email: String!): User!
+  login(password: String!, email: String!): UserModel!
   logout: Boolean!
+  getProfile: ProfileModel!
 }
 
 input CreateBoardInput {
@@ -93,7 +102,7 @@ input CreateUserInput {
   email: String!
   password: String!
   name: String!
-  admin: Float!
+  admin: Int
 }
 
 input UpdateUserInput {
