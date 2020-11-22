@@ -58,7 +58,7 @@ export class AuthService {
         return true;
     }
 
-    getProfile(context){
+    async getProfile(context){
         const token = context.req.cookies.token;
         if(token){
             return this.decode(token);

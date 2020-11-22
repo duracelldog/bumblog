@@ -1,32 +1,34 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
-import { CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @InputType()
 export class UpdateBoardInput{
     @Field(type => Int)
     id!: number;
 
-    @Field()
+    @Field({nullable: true})
     title: string;
 
-    @Field()
+    @Field({nullable: true})
     tags: string;
 
-    @Field()
+    @Field({nullable: true})
     contents: string;
 
-    @Field(type => Int)
+    @Field(type => Int, {nullable: true})
     userId: number;
 
-    @Field({nullable: true})
-    t_originalFileName: string;
+    @Field(type => Date, {nullable: true})
+    updatedAt: Date;
 
     @Field({nullable: true})
-    t_uploadFileName: string;
+    t_originalName: string;
 
     @Field({nullable: true})
-    c_originalFileName: string;
+    t_fileName: string;
 
-    @Field({nullable: true})
-    c_uploadFileName: string;   
+    // @Field({nullable: true})
+    // c_originalFileName: string;
+
+    // @Field({nullable: true})
+    // c_uploadFileName: string;   
 }

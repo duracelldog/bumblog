@@ -26,11 +26,11 @@ export class Board{
     @Column()
     userId: number;
 
-    @Field(type => Date, {nullable: true, defaultValue: Date.now()})
+    @Field(type => Date, {nullable: true, defaultValue: new Date()})
     @Column()
     createdAt: Date;
 
-    @Field(type => Date, {nullable: true, defaultValue: Date.now()})
+    @Field(type => Date, {nullable: true, defaultValue: new Date()})
     @Column()
     updatedAt: Date;
 

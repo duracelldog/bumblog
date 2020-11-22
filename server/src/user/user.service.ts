@@ -32,7 +32,7 @@ export class UserService {
     async findOneByEmail(email: string): Promise<User>{
         try{
             const result = await this.userRepository.findOne({email}, {relations: ['board']});
-            if(!result) throw new NotFoundException(`ID: ${email} is not found`);
+            if(!result) throw new NotFoundException(`이메일(${email})을 찾을 수 없습니다.`);
             return Promise.resolve(result);
         }catch(err){
             return Promise.reject(err);
@@ -56,18 +56,20 @@ export class UserService {
 
             user.password = hash;
 
+            const result = await this.userRepository.save(user);
+
             // 토큰 저장
             const token = this.jwtService.sign({
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                admin: user.admin
+                id: result.id,
+                email: result.email,
+                name: result.name,
+                admin: result.admin
             });
 
             const exdays = 1;
             context.res.cookie('token', token, {httpOnly: true, expires: new Date(Date.now() + (exdays*24*60*60*1000))});
 
-            return this.userRepository.save(user);
+            return Promise.resolve(result);
         }catch(err){
             return Promise.reject(err);
         }

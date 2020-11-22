@@ -12,15 +12,16 @@ function BoardList({data}: {data: boardListType}){
     const [date, setDate] = useState('');
     const [thumbImg, setThumbImg] = useState(defaultThumbnail);
 
-    const createDateText = (createdAt: number) =>{
+    const createDateText = (createdAt: Date) =>{
         const date = new Date(createdAt);
 
         const year = date.getUTCFullYear(); // 2020
-        const month = checkDate(date.getUTCMonth());
-        const day = checkDate(date.getUTCDay());
+        const month = checkDate(date.getUTCMonth()+1);
+        const day = checkDate(date.getUTCDate());
         const hour = checkDate(date.getUTCHours());
         const minutes = checkDate(date.getUTCMinutes());
         const seconds = checkDate(date.getUTCSeconds());
+
 
         // return `${year}.${month}.${day} ${hour}:${minutes}:${seconds}`;
         return `${year}.${month}.${day}`;

@@ -9,8 +9,8 @@ export type boardListType = {
     title: string;
     tags: string;
     contents: string;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
     user: {
         name: string;
     }

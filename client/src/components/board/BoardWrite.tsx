@@ -7,12 +7,68 @@ import useAuth from '../../redux/hooks/useAuth';
 import TextEditor from '../share/TextEditor';
 import { boardImagesType, boardListType } from './BoardHome';
 import { BsX } from 'react-icons/bs';
+import { gql, useMutation, useQuery } from '@apollo/client';
+
+type CreateBoardInput = {
+    title: string;
+    tags: string;
+    contents: string;
+    userId: number;
+}
+
+type UpdateBoardInput = {
+    id: number
+    title?: string;
+    tags?: string;
+    contents?: string;
+}
+
+const GET_LIST = gql`
+    mutation GetBoardList($id: Int!){
+        boardList(id: $id){
+            title
+            tags
+            contents
+            userId
+            t_fileName
+            boardImages{
+                fileName
+            }
+        }
+    }
+`;
+
+const CREATE_LIST = gql`
+    mutation CreateBoardList($boardData: CreateBoardInput!){
+        createBoardList(boardData: $boardData)
+    }
+`;
+
+const UPDATE_LIST = gql`
+    mutation UpdateList($boardData: UpdateBoardInput!){
+        updateBoardList(boardData: $boardData)
+    }
+`;
+
+
+
 
 type ParamsType = {
     id: string;
 }
 
 function BoardWrite(props: RouteChildrenProps<ParamsType>){
+
+    // Mutation
+    const [getBoardList, GBLResult] = useMutation(GET_LIST);
+    const [createBoardList, CBLResult] = useMutation<{
+        CreateBoardList: CreateBoardInput,
+        boardData: CreateBoardInput
+    }>(CREATE_LIST);
+    const [updateBoardList, UBLResult] = useMutation<{
+        UpdateList: UpdateBoardInput,
+        boardData: UpdateBoardInput
+    }>(UPDATE_LIST);
 
     const history = useHistory();
     const {authState} = useAuth();
@@ -24,13 +80,16 @@ function BoardWrite(props: RouteChildrenProps<ParamsType>){
 
     const [titleState, setTitleState] = useState('')
     const [tagsState, setTagsState] = useState<string[]>([]);
-    const [idState, setIdState] = useState('');
+    const [userIdState, setUserIdState] = useState<number>(-1);
+    const listId = props.match?.params.id;
 
-    const [isLoginState, setIsLoginState] = useState<string | null>(null);
 
     // Thumbnail Image
     const [tempThumbnailImagePathState, setTempThumbnailImagePathState] = useState('');
     const [thumbnailImageState, setThumbnailImageState] = useState<string[]>([]);
+
+    const [tOriginalNameState, setTOriginalNameState] = useState<string>();
+    const [tFileNameState, setTFileNameState] = useState<string>();
     const [thumbnailImageFilesState, setThumbnailImageFilesState] = useState<File[]>([]);
     
 
@@ -41,39 +100,78 @@ function BoardWrite(props: RouteChildrenProps<ParamsType>){
 
 
 
-    const setContentsOnPage = (id:string) =>{
-        axios({
-            method: 'get',
-            url: `/api/board/list/${props.match?.params.id}`
-        }).then((res: {data: boardListType}) =>{
-            console.log('res', res.data);
+    // const setContentsOnPage = (id:number) =>{
 
-            setTitleState(res.data.title);
-            setTagsState(res.data.tags === '' ? [] : res.data.tags.split(','));
+    //     axios({
+    //         method: 'get',
+    //         url: `/api/board/list/${props.match?.params.id}`
+    //     }).then((res: {data: boardListType}) =>{
+    //         console.log('res', res.data);
 
-            setThumbnailImageState(res.data.t_fileName.split(','));
-            setTextEditorImageState(res.data.boardImages);
-            setTagsOnViewByData(res.data.tags.split(','));
+    //         setTitleState(res.data.title);
+    //         setTagsState(res.data.tags === '' ? [] : res.data.tags.split(','));
 
-            if(res.data.t_fileName){
-                setTempThumbnailImagePathState(path.resolve('./uploads', res.data.t_fileName.split(',')[0]));
+    //         setThumbnailImageState(res.data.t_fileName.split(','));
+    //         setTextEditorImageState(res.data.boardImages);
+    //         setTagsOnViewByData(res.data.tags.split(','));
+
+    //         if(res.data.t_fileName){
+    //             setTempThumbnailImagePathState(path.resolve('./uploads', res.data.t_fileName.split(',')[0]));
+    //         }
+
+    //         setTextEditorContentsState(res.data.contents);
+    //     });
+    // }
+
+
+
+
+    // GetBoardList - 수정 모드
+    useEffect(()=>{ 
+        if(!GBLResult.loading && GBLResult.data){
+            const {title, tags, t_fileName, boardImages, contents, userId} = GBLResult.data.boardList;
+
+            // State 입력
+            setTitleState(title);
+            setTagsState(tags.split(','));
+            setTextEditorContentsState(contents);
+            setUserIdState(userId);
+            if(t_fileName){
+                setThumbnailImageState(t_fileName);
+                setTempThumbnailImagePathState(path.resolve('./uploads', t_fileName));
             }
+            setTextEditorImageState(boardImages);   
 
-            setTextEditorContentsState(res.data.contents);
-        });
-    }
+            // 화면에 표시
+            setTagsOnViewByData(tags.split(','));
+        }
+    }, [GBLResult.loading]);
+
+    // CreateBoardList - 신규 등록
+    useEffect(()=>{ 
+        if(!CBLResult.loading && CBLResult.data){
+            history.push('/board');
+        }
+    }, [CBLResult.loading]);
+
+    // UpdateBoardList - 수정 등록
+    useEffect(()=>{ 
+        if(!UBLResult.loading && UBLResult.data){
+            history.push('/board/view?_id=' + listId);
+        }
+    }, [UBLResult.loading]);
 
 
     useEffect(()=>{
-
-        const listId = props.match?.params.id;
-
-        console.log("match", listId);
-        
         // 수정요청으로 들어올 경우
         if(listId){
-            setIdState(listId);
-            setContentsOnPage(listId);
+            // setIdState(parseInt(listId));
+            // setContentsOnPage(parseInt(listId));
+            getBoardList({
+                variables: {
+                    id: parseInt(listId)
+                }
+            })
         }
 
         window.scrollTo(0, 0);
@@ -118,7 +216,7 @@ function BoardWrite(props: RouteChildrenProps<ParamsType>){
        
     }
 
-    const setFormData = (idState: string) =>{
+    const setFormData = (idState: number) =>{
         const form = new FormData();
 
         form.append('title', titleState);
@@ -126,7 +224,7 @@ function BoardWrite(props: RouteChildrenProps<ParamsType>){
         form.append('description', textEditorContentsState);
         form.append('writer', authState.name);
 
-        if(idState == ''){ // 신규 등록
+        if(idState === -1){ // 신규 등록
 
             // 썸네일 이미지
             if(thumbnailImageFilesState){ 
@@ -147,7 +245,7 @@ function BoardWrite(props: RouteChildrenProps<ParamsType>){
             }           
 
         }else{ // 수정 등록
-            form.append('_id', idState);
+            // form.append('_id', idState);
 
             form.append('thumbnailImage', JSON.stringify(thumbnailImageState)); // 기존 이미지 정보
             form.append('descriptionImage', JSON.stringify(textEditorImageState)); // 기존 이미지 정보
@@ -186,31 +284,57 @@ function BoardWrite(props: RouteChildrenProps<ParamsType>){
 
         
         if(passFlag){
-            const form = setFormData(idState);
+            // const form = setFormData(parseInt(listId));
         
-            if(idState === ''){ // 신규 등록
-                
-                axios({
-                    headers: {'Content-Type': 'multipart/form-data'},
-                    method: 'post',
-                    url: '/api/board/list',
-                    data: form
-                }).then((res) =>{
-                    console.log('post_res', res.data[0]);
-                    history.push('/board');
+            if(!listId){ // 신규 등록
+
+                const boardData = {
+                    title: titleState,
+                    tags: tagsState.toString(),
+                    contents: textEditorContentsState,
+                    userId: authState.id
+                }
+
+                createBoardList({
+                    variables: {
+                        boardData
+                    }
                 });
+                
+                // axios({
+                //     headers: {'Content-Type': 'multipart/form-data'},
+                //     method: 'post',
+                //     url: '/api/board/list',
+                //     data: form
+                // }).then((res) =>{
+                //     console.log('post_res', res.data[0]);
+                //     history.push('/board');
+                // });
     
             }else{ // 수정 등록
+
+                const boardData = {
+                    id: parseInt(listId),
+                    title: titleState,
+                    tags: tagsState.toString(),
+                    contents: textEditorContentsState,
+                }
+
+                updateBoardList({
+                    variables: {
+                        boardData
+                    }
+                })
       
-                axios({
-                    headers: {'Content-Type': 'multipart/form-data'},
-                    method: 'put',
-                    url: '/api/board/list',
-                    data: form
-                }).then((res) =>{
-                    console.log('put_res', res.data[0]);
-                    history.push('/board/view?_id=' + idState);
-                });
+                // axios({
+                //     headers: {'Content-Type': 'multipart/form-data'},
+                //     method: 'put',
+                //     url: '/api/board/list',
+                //     data: form
+                // }).then((res) =>{
+                //     console.log('put_res', res.data[0]);
+                //     history.push('/board/view?_id=' + listId);
+                // });
             }
     
     
@@ -315,15 +439,10 @@ function BoardWrite(props: RouteChildrenProps<ParamsType>){
         setThumbnailImageFilesState([]);   
     }
 
-    useEffect(()=>{
-        console.log('authSat', authState);
-
-        setIsLoginState(authState.email);
-    }, [authState])
 
     return (
         <main className="bb-board-write__main">
-            {isLoginState === "" ? (
+            {authState.email === "" ? (
                 <Redirect to={`/login?redirect=/board/write`} />
             ) : (
                 <section className="bb-board-write__form-section">

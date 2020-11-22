@@ -9,7 +9,7 @@ import useModal from '../../redux/hooks/useModal';
 import { gql, useMutation, useQuery } from '@apollo/client';
 
 const GET_LIST = gql`
-    query GetBoardList($id: Int!){
+    mutation GetBoardList($id: Int!){
         boardList(id: $id){
             id
             tags
@@ -33,18 +33,16 @@ const DELETE_LIST = gql`
 
 function BoardView(props: RouteChildrenProps<{id: string}>){
 
-    const boardId = props.match?.params.id ? parseInt(props.match?.params.id) : 1;
-    const {onOpenConfirmModal, onOpenAlertModal, onCloseModal} = useModal();
-    const GBLResult = useQuery(GET_LIST, {
-        variables: {
-            id: boardId
-        }
-    });
+    const boardId = props.match?.params.id;
+    const {onOpenConfirmModal, onCloseModal} = useModal();
+
+    const [getBoardList, GBLResult] = useMutation(GET_LIST);
     const [deleteBoardList, DBLResult] = useMutation(DELETE_LIST);
     
     const [listData, setListData] = useState<boardListType>();
     const history = useHistory();
     const [thumbnailImageState, setThumbnailImageState] = useState('');
+
 
     useEffect(() => {
 
@@ -75,7 +73,10 @@ function BoardView(props: RouteChildrenProps<{id: string}>){
     
     useEffect(()=>{
         window.scrollTo(0, 0);
-        return () => { console.log('cleanup') };
+        if(boardId)
+        getBoardList({variables: {
+            id: parseInt(boardId)
+        }});
     }, []);
 
 
@@ -87,8 +88,9 @@ function BoardView(props: RouteChildrenProps<{id: string}>){
             confirm: {
                 isShow: true,
                 func: () => {
+                    if(boardId)
                     deleteBoardList({variables: {
-                        id: boardId
+                        id: parseInt(boardId)
                     }});
                 }
             }

@@ -58,15 +58,17 @@ type ProfileModel {
 
 type Query {
   boardLists(limit: Int = 10, word: String = "", target: String = "title"): [Board!]!
-  boardList(id: Int!): Board
   users: [User!]!
   user(id: Int!): User
 }
 
 type Mutation {
-  createBoardList(boardData: CreateBoardInput!): Board!
+  boardList(id: Int!): Board
+  createBoardList(boardData: CreateBoardInput!): Boolean!
   updateBoardList(boardData: UpdateBoardInput!): Boolean!
   deleteBoardList(id: Int!): Boolean!
+  createBoardImage(boardImageData: CreateBoardImageInput!): Boolean!
+  deleteBoardImage(id: Int!): Boolean!
   createUser(userData: CreateUserInput!): User!
   updateUser(userData: UpdateUserInput!): Boolean!
   deleteUser(id: Int!): Boolean!
@@ -80,22 +82,26 @@ input CreateBoardInput {
   tags: String!
   contents: String!
   userId: Int!
-  t_originalFileName: String
-  t_uploadFileName: String
-  c_originalFileName: String
-  c_uploadFileName: String
+  createdAt: DateTime
+  t_originalName: String
+  t_fileName: String
 }
 
 input UpdateBoardInput {
   id: Int!
-  title: String!
-  tags: String!
-  contents: String!
-  userId: Int!
-  t_originalFileName: String
-  t_uploadFileName: String
-  c_originalFileName: String
-  c_uploadFileName: String
+  title: String
+  tags: String
+  contents: String
+  userId: Int
+  updatedAt: DateTime
+  t_originalName: String
+  t_fileName: String
+}
+
+input CreateBoardImageInput {
+  originalName: String!
+  fileName: String!
+  boardId: Int!
 }
 
 input CreateUserInput {

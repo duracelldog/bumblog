@@ -14,15 +14,18 @@ export class CreateBoardInput{
     @Field(type => Int)
     userId!: number;
 
-    @Field({nullable: true})
-    t_originalFileName: string;
+    @Field(type => Date, {nullable: true})
+    createdAt: Date;
 
     @Field({nullable: true})
-    t_uploadFileName: string;
+    t_originalName: string;
 
     @Field({nullable: true})
-    c_originalFileName: string;
+    t_fileName: string;
 
-    @Field({nullable: true})
-    c_uploadFileName: string;   
+    // @Field({nullable: true})
+    // c_originalFileName: string;
+
+    // @Field({nullable: true})
+    // c_uploadFileName: string;   
 }

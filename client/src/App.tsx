@@ -14,6 +14,7 @@ import useAuth from './redux/hooks/useAuth';
 const GET_PROFILE = gql`
   mutation GetProfile{
     getProfile{
+      id
       email
       name
     }
@@ -28,7 +29,6 @@ function App() {
   useEffect(()=>{
     if(!GPResult.loading && GPResult.data){
       onLogin(GPResult.data.getProfile);
-
     }
   }, [GPResult.loading]);
 

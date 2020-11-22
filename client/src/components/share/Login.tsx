@@ -97,12 +97,7 @@ function Login(props : RouteChildrenProps<ParamsType>){
      useEffect(()=> { // 로그인
         if(!loginResult.loading && loginResult.data){
 
-            const payload = {
-                email: loginResult.data.login.email,
-                name: loginResult.data.login.name
-            }
-
-            onLogin(payload);
+            onLogin(loginResult.data.login);
 
             if(redirctState === ''){
                 props.history.goBack();
@@ -114,12 +109,8 @@ function Login(props : RouteChildrenProps<ParamsType>){
 
     useEffect(()=> { // 신규 가입
         if(!createUserResult.loading && createUserResult.data){
-            const payload = {
-                email: createUserResult.data.createUser.email,
-                name: createUserResult.data.createUser.name
-            }
 
-            onLogin(payload);
+            onLogin(createUserResult.data.createUser);
             
             if(redirctState === ''){
                 props.history.goBack();
