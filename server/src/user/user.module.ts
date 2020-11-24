@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { UserResolver } from './user.resolver';
 import { JwtModule } from '@nestjs/jwt';
 import { bumblog } from 'src/config/bumblog.config';
+import { AuthService } from 'src/auth/auth.service';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { bumblog } from 'src/config/bumblog.config';
       signOptions: {expiresIn: '60s'}
     })
   ],
-  providers: [UserService, UserResolver],
+  providers: [UserService, UserResolver, AuthService],
   controllers: [UserController]
 })
 export class UserModule {}

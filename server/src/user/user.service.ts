@@ -39,7 +39,7 @@ export class UserService {
         }
     }
 
-    async create(userData: CreateUserInput, context): Promise<User>{
+    async create(userData: CreateUserInput): Promise<User>{
         try{
             const emailCheck = await this.userRepository.findOne({email: userData.email});
             if(emailCheck) throw new Error(`${userData.email}이 이미 존재합니다.`);
@@ -57,17 +57,6 @@ export class UserService {
             user.password = hash;
 
             const result = await this.userRepository.save(user);
-
-            // 토큰 저장
-            const token = this.jwtService.sign({
-                id: result.id,
-                email: result.email,
-                name: result.name,
-                admin: result.admin
-            });
-
-            const exdays = 1;
-            context.res.cookie('token', token, {httpOnly: true, expires: new Date(Date.now() + (exdays*24*60*60*1000))});
 
             return Promise.resolve(result);
         }catch(err){

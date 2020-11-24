@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as BCRYPT from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
@@ -63,7 +63,7 @@ export class AuthService {
         if(token){
             return this.decode(token);
         }else{
-            return false;
+            return new NotFoundException(`로그인 상태가 아닙니다.`);
         }
     }
 

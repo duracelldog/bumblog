@@ -3,9 +3,7 @@ import { CreateBoardInput } from './dto/create-board.input';
 import { UpdateBoardInput } from './dto/update-board.input';
 import { BoardService } from './board.service';
 import { Board } from './entities/board.entity';
-import { BoardImage } from './entities/board-image.entity';
 import { CreateBoardImageInput } from './dto/create-board-image.input';
-
 @Resolver()
 export class BoardResolver {
     constructor(
@@ -41,13 +39,13 @@ export class BoardResolver {
         return this.boardService.deleteBoardList(id);
     }
 
-    @Mutation(() => Boolean)
-    createBoardImage(@Args('boardImageData') boardImageData: CreateBoardImageInput){
-        return this.boardService.createBoardImage(boardImageData);
-    }
+    // @Mutation(() => Boolean)
+    // createBoardImage(@Args('boardImageData') boardImageData: CreateBoardImageInput){
+    //     return this.boardService.createBoardImage(boardImageData);
+    // }
     
-    @Mutation(() => Boolean)
-    deleteBoardImage(@Args('id', {type: () => Int}) id: number){
-        return this.boardService.deleteBoardImage(id);
-    }
+    // @Mutation(() => Boolean)
+    // deleteBoardImage(@Args('id', {type: () => Int}) id: number){
+    //     return this.boardService.deleteBoardImage(id);
+    // }
 }

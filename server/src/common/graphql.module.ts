@@ -6,6 +6,7 @@ import { GraphQLError } from 'graphql';
     imports: [
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
+            installSubscriptionHandlers: true,
             cors: {
                 credentials: true,
                 origin: true

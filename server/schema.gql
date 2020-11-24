@@ -58,6 +58,7 @@ type ProfileModel {
 
 type Query {
   boardLists(limit: Int = 10, word: String = "", target: String = "title"): [Board!]!
+  getProfile: ProfileModel!
   users: [User!]!
   user(id: Int!): User
 }
@@ -67,14 +68,11 @@ type Mutation {
   createBoardList(boardData: CreateBoardInput!): Boolean!
   updateBoardList(boardData: UpdateBoardInput!): Boolean!
   deleteBoardList(id: Int!): Boolean!
-  createBoardImage(boardImageData: CreateBoardImageInput!): Boolean!
-  deleteBoardImage(id: Int!): Boolean!
-  createUser(userData: CreateUserInput!): User!
-  updateUser(userData: UpdateUserInput!): Boolean!
-  deleteUser(id: Int!): Boolean!
   login(password: String!, email: String!): UserModel!
   logout: Boolean!
-  getProfile: ProfileModel!
+  createUser(userData: CreateUserInput!): UserModel!
+  updateUser(userData: UpdateUserInput!): Boolean!
+  deleteUser(id: Int!): Boolean!
 }
 
 input CreateBoardInput {
@@ -98,12 +96,6 @@ input UpdateBoardInput {
   t_fileName: String
 }
 
-input CreateBoardImageInput {
-  originalName: String!
-  fileName: String!
-  boardId: Int!
-}
-
 input CreateUserInput {
   email: String!
   password: String!
@@ -117,4 +109,8 @@ input UpdateUserInput {
   password: String!
   name: String!
   admin: Float
+}
+
+type Subscription {
+  checkLogin: ProfileModel!
 }

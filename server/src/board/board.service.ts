@@ -6,6 +6,8 @@ import { CreateBoardInput } from './dto/create-board.input';
 import { UpdateBoardInput } from './dto/update-board.input';
 import { BoardImage } from './entities/board-image.entity';
 import { Board } from './entities/board.entity';
+import { statSync, unlinkSync } from 'fs';
+import { resolve, join } from 'path';
 
 @Injectable()
 export class BoardService {
@@ -30,7 +32,7 @@ export class BoardService {
 
     async findOneBoardList(id: number): Promise<Board>{
         try{
-            const result = await this.boardRepository.findOne(id, {relations: ['user']});
+            const result = await this.boardRepository.findOne(id, {relations: ['user', 'boardImages']});
             if(!result) throw new NotFoundException(`ID: ${id} is not found`);
             return Promise.resolve(result);
         }catch(err){
@@ -55,8 +57,10 @@ export class BoardService {
                 ...result,
                 ...boardData
             }
+            console.log('boardData', boardData);
             delete updateData.id;
             delete updateData.user;
+            delete updateData.boardImages;
             updateData.updatedAt = new Date();
 
             await this.boardRepository.update(boardData.id, updateData)
@@ -77,22 +81,85 @@ export class BoardService {
         }
     }
 
-    async createBoardImage(boardImageData: CreateBoardImageInput){
+    
+
+
+
+    async createBoardImage(boardId:number, boardImageData: CreateBoardImageInput){
         try{
-            await this.boardImageRepository.save(boardImageData)
+            // t_file
+            boardImageData.t_file.forEach(async file => {
+                const t_file = new UpdateBoardInput();
+                t_file.id = boardId;
+                t_file.t_fileName = file.filename;
+                t_file.t_originalName = file.originalname
+    
+                await this.updateBoardList(t_file);
+            });
+
+            // c_files
+            boardImageData.c_files.forEach(async file => {
+                const c_file = {
+                    fileName: file.filename,
+                    originalName: file.originalname,
+                    boardId: boardId
+                }
+                await this.boardImageRepository.save(c_file);
+            })
+
             return Promise.resolve(true);
         }catch(err){
             return Promise.reject(err);
         }
     }
 
-    async deleteBoardImage(id: number): Promise<Boolean>{
-        try{
-            const result = await this.boardImageRepository.findOne({id});
-            if(!result) throw new NotFoundException(`해당 이미지를 찾을 수 없습니다.`);
-            this.boardImageRepository.delete(id)
+    async deleteBoardImage(boardId: number, boardImageIds: string[]): Promise<Boolean>{
 
+        const imagePath = resolve('./public/images/board');
+
+        try{
+            // t_file 
+            if(boardId){
+                // 파일 삭제
+                const fileName = await this.boardRepository.findOne({id: boardId});
+                const filePath = join(imagePath, fileName.t_fileName);
+
+                const state = statSync(filePath);
+                if(state){
+                    unlinkSync(filePath)
+                }else{
+                    throw new Error(`${fileName} 파일 삭제 실패`);
+                }
+
+                // 데이터베이스 삭제
+                const t_file = new UpdateBoardInput();
+                t_file.id = boardId;
+                t_file.t_fileName = null;
+                t_file.t_originalName = null;
+                await this.updateBoardList(t_file);
+            }
+
+            // c_files
+            if(boardImageIds.length > 0){
+                boardImageIds.forEach(async imageId => {
+                    // 파일 삭제
+                    const fileName = await this.boardImageRepository.findOne({id: +imageId});
+                    const filePath = join(imagePath, fileName.fileName);
+
+                    const state = statSync(filePath);
+                    if(state){
+                        unlinkSync(filePath)
+                    }else{
+                        throw new Error(`${fileName} 파일 삭제 실패`);
+                    }
+
+                    // 데이터베이스 삭제
+                    await this.boardImageRepository.delete({id: +imageId});
+                })
+            }
+            
             return Promise.resolve(true);
+
         }catch(err){
             return Promise.reject(err);
         }

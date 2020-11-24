@@ -7,7 +7,9 @@ import { BoardResolver } from './board.resolver';
 import { BoardImage } from './entities/board-image.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Board, BoardImage])],
+    imports: [
+        TypeOrmModule.forFeature([Board, BoardImage])
+    ],
     controllers: [BoardController],
     providers: [BoardService, BoardResolver]
 })
