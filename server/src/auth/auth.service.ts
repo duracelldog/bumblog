@@ -4,8 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { rejects } from 'assert';
-import { ProfileModel } from './model/profile.model';
 import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
@@ -59,11 +57,20 @@ export class AuthService {
     }
 
     async getProfile(context){
-        const token = context.req.cookies.token;
-        if(token){
-            return this.decode(token);
-        }else{
-            return new NotFoundException(`로그인 상태가 아닙니다.`);
+        try{
+            const token = context.req.cookies.token;
+            if(!token) return new NotFoundException(`로그인 상태가 아닙니다.`);
+    
+            const userInfo: any = await this.decode(token);
+            if(!userInfo) return new NotFoundException(`토큰이 올바르지 않습니다.`);
+    
+            const user = await this.userRepository.findOne({id: userInfo.id});
+            if(!user) return new NotFoundException(`해당 유저가 없습니다.`);
+    
+            return Promise.resolve(userInfo);
+        }catch(err){
+            context.res.clearCookie('token');
+            return Promise.reject(err)
         }
     }
 

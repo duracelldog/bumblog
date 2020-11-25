@@ -1,9 +1,19 @@
-import React, {useRef, useEffect} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import axios from 'axios';
 import {Link, useHistory} from 'react-router-dom';
 import {BiMenu, BiUser} from 'react-icons/bi';
 import useAuth from '../../redux/hooks/useAuth';
-import { gql, useMutation } from '@apollo/client';
+import { gql, useMutation, useQuery, useSubscription } from '@apollo/client';
+
+const GET_PROFILE = gql`
+    query GetProfile{
+        getProfile{
+            id
+            email
+            name
+        }
+    }
+`;
 
 const LOGOUT = gql`
     mutation Logout{
@@ -11,13 +21,22 @@ const LOGOUT = gql`
     }
 `;
 
+
+export type profileType = {
+    id: number;
+    email: string;
+    name: string;
+}
+
 function Header(){
 
     const history = useHistory();
     const mobileMenuRef = useRef<HTMLUListElement>(null);
     const subMenuRef = useRef<HTMLDivElement>(null);
-    const {authState, onLogout} = useAuth();
-    const [logout, LOResult] = useMutation(LOGOUT);
+    const {authState, onLogin, onLogout} = useAuth();
+
+    const getProfileResult = useQuery<{getProfile:profileType}>(GET_PROFILE);
+    const [logout, logoutResult] = useMutation(LOGOUT);
 
     // MainMenu 모바일에서 메뉴 펄치기 버튼
     const toggleMainMenu = (event: any , status: Number = 2) =>{
@@ -91,9 +110,21 @@ function Header(){
 
     const onClickLogout = () =>{
         logout(); // graphQL
-        onLogout(); // Redux State
-        history.push('/');
     }
+
+    useEffect(()=>{
+        if(getProfileResult.data){
+            onLogin(getProfileResult.data.getProfile);
+        }
+    }, [getProfileResult.data])
+
+    useEffect(()=>{
+        if(logoutResult.data){
+            onLogout();
+            closeSubMenu();
+            history.push('/');
+        }
+    }, [logoutResult.data])
 
     useEffect(()=>{
         window.addEventListener('resize', ()=>{
@@ -118,14 +149,14 @@ function Header(){
                                 <div className="edge"></div>
                             </div>
                             <div className="bb-header__sub-menu-wrapper">
-                                {authState.name !== '' && (
+                                {authState.id !== 0 && (
                                     <div className="bb-header__sub-menu_login-massage">
                                         Signed&nbsp;in&nbsp;as
                                         <div>{authState.name}</div>
                                     </div>
                                 )}
                                 <ul className="bb-header__sub-menu-box-ul">
-                                    {authState.name !== '' ? (
+                                    {authState.id ? (
                                             <li className="bb-header__sub-menu-box-li" onClick={onClickLogout}>Logout</li>
                                         ) : (
                                             <li className="bb-header__sub-menu-box-li">

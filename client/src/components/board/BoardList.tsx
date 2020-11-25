@@ -39,7 +39,7 @@ function BoardList({data}: {data: boardListType}){
         setTags(data.tags);
 
         if(data.t_fileName){
-            setThumbImg(path.resolve('./uploads', data.t_fileName.split(',')[0]));
+            setThumbImg(path.resolve('./public/images/board', data.t_fileName.split(',')[0]));
         }
         
         setDate(createDateText(data.createdAt));

@@ -19,7 +19,7 @@ export const login = (data: AuthDataType) =>({
 export const logout = () =>({
     type: LOGOUT,
     payload: {
-        id: -1,
+        id: 0,
         email: '',
         name: ''
     }
@@ -30,7 +30,7 @@ type AuthAction =
     | ReturnType<typeof logout>
 
 const initialState: AuthDataType = {
-    id: -1,
+    id: 0,
     email: '',
     name: ''
 }

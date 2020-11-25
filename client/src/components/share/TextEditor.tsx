@@ -87,7 +87,7 @@ function TextEditor({
     const openFileInput = ()=>{
         setInputTagCountState(inputTagCountState + 1);
         setTimeout(()=>{
-            document.querySelector<HTMLInputElement>(`.decriptionInputFileTag-${inputTagCountState+1}`)?.click();
+            document.querySelector<HTMLInputElement>(`.contentsImageInputTag-${inputTagCountState+1}`)?.click();
         }, 10)
     }
 
@@ -133,8 +133,8 @@ function TextEditor({
             if(e.key === "Backspace"){
                 // imageState - 기존 이미지 지워졌는지 검사
                 textEditorImageState.forEach(boardImage => {
-                    if(iframeRef.current?.contentDocument?.body.innerHTML.indexOf(boardImage.filename) === -1){
-                        setTextEditorImageState(textEditorImageState.filter(item => item.filename !== boardImage.filename))
+                    if(iframeRef.current?.contentDocument?.body.innerHTML.indexOf(boardImage.fileName) === -1){
+                        setTextEditorImageState(textEditorImageState.filter(item => item.fileName !== boardImage.fileName))
                     }
                 });
 
@@ -142,13 +142,13 @@ function TextEditor({
                 if(inputTagCountState > 0){
                     for(let i=1; i<=inputTagCountState; i++){
     
-                        if(iframeRef.current?.contentDocument?.body.innerHTML.indexOf(`decriptionImgTag-${i}`) !== -1){
+                        if(iframeRef.current?.contentDocument?.body.innerHTML.indexOf(`contentsImage-${i}`) !== -1){
                             console.log('이미지가 있다.!!')
                         }else{
                             console.log('이미지가 없다.!!', textEditorImageFilesState)
         
-                            if(document.querySelectorAll<HTMLInputElement>(`.decriptionInputFileTag-${i}`))
-                            document.querySelectorAll<HTMLInputElement>(`.decriptionInputFileTag-${i}`)[0].value = "";
+                            if(document.querySelectorAll<HTMLInputElement>(`.contentsImageInputTag-${i}`))
+                            document.querySelectorAll<HTMLInputElement>(`.contentsImageInputTag-${i}`)[0].value = "";
 
                             if(textEditorImageFilesState.length > 0){
                                 setTextEditorImageFilesState(textEditorImageFilesState.filter((file, index) => {
@@ -224,7 +224,7 @@ function TextEditor({
         const reader = new FileReader();
         reader.onload = function(e){
             if(e.target?.result){
-                const imageTag = `<img width='100%' height='auto' class=".decriptionImgTag-${inputTagCountState}" src="${e.target.result.toString()}" />`;
+                const imageTag = `<img width='100%' height='auto' class=".contentsImage-${inputTagCountState}" src="${e.target.result.toString()}" />`;
                 iframeRef.current?.contentDocument?.execCommand('InsertHTML', false, imageTag);
                 setTextEditorContentsState(getTextEditorContentsAfterRemoveTempImgSrc());
             }
@@ -271,7 +271,7 @@ function TextEditor({
 
     return (
         <div className="bb-board-write__editor-wrapper">
-            {[...Array(inputTagCountState)].map((v, key) => <input key={key} className={`decriptionInputFileTag-${key+1}`} type="file" onChange={setImageFile} />)}
+            {[...Array(inputTagCountState)].map((v, key) => <input key={key} className={`contentsImageInputTag-${key+1}`} type="file" onChange={setImageFile} />)}
             <ul className="bb-board-write__editor-options" ref={optionsRef}>
                 <li onClick={toggleFontSizeWindow}>
                     <VscTextSize />

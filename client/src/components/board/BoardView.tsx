@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import {Link, match, RouteChildrenProps} from 'react-router-dom';
+import React, { useEffect } from 'react';
+import {Link, RouteChildrenProps} from 'react-router-dom';
 import {boardListType} from './BoardHome';
-import {useHistory} from 'react-router-dom';
 import defaultThumbnail from '../../assets/images/board/default_thumbnail.jpg';
 import {BsPencilSquare, BsTrash} from 'react-icons/bs'
 import path from 'path';
@@ -33,52 +32,11 @@ const DELETE_LIST = gql`
 
 function BoardView(props: RouteChildrenProps<{id: string}>){
 
-    const boardId = props.match?.params.id;
+    const boardId = props.match?.params.id ? parseInt(props.match?.params.id) : 0
     const {onOpenConfirmModal, onCloseModal} = useModal();
 
-    const [getBoardList, GBLResult] = useMutation(GET_LIST);
-    const [deleteBoardList, DBLResult] = useMutation(DELETE_LIST);
-    
-    const [listData, setListData] = useState<boardListType>();
-    const history = useHistory();
-    const [thumbnailImageState, setThumbnailImageState] = useState('');
-
-
-    useEffect(() => {
-
-        if(!GBLResult.loading){
-            if(GBLResult.data){
-                setListData(GBLResult.data.boardList);
-                if(GBLResult.data.t_fileName){
-                    setThumbnailImageState(path.resolve('./uploads', GBLResult.data.t_fileName));
-                }else{
-                    setThumbnailImageState(defaultThumbnail);   
-                }
-            }
-        }
-
-        
-    }, [GBLResult.loading]);
-
-    useEffect(() => {
-        console.log('DBLResult.data', DBLResult.data);
-
-        if(!DBLResult.loading){
-            if(DBLResult.data){
-                onCloseModal();
-                history.push('/board');
-            }
-        }        
-    }, [DBLResult.loading])
-    
-    useEffect(()=>{
-        window.scrollTo(0, 0);
-        if(boardId)
-        getBoardList({variables: {
-            id: parseInt(boardId)
-        }});
-    }, []);
-
+    const [getBoardList, getBoardListResult] = useMutation<{boardList: boardListType}>(GET_LIST);
+    const [deleteBoardList, deleteBoardListResult] = useMutation<{deleteBoardList: boolean}>(DELETE_LIST);
 
     const handleDelete = () =>{
         onOpenConfirmModal({
@@ -88,56 +46,73 @@ function BoardView(props: RouteChildrenProps<{id: string}>){
             confirm: {
                 isShow: true,
                 func: () => {
-                    if(boardId)
                     deleteBoardList({variables: {
-                        id: parseInt(boardId)
-                    }});
+                        id: boardId
+                    }});         
                 }
             }
         });   
     }
 
-    if(!listData){
-        return (
-            <main className="bb-board-view__main"></main>
+    const backgroundImageStyle = {
+        backgroundImage: getBoardListResult.data?.boardList.t_fileName ? (
+            `url(${path.resolve('./uploads', getBoardListResult.data.boardList.t_fileName)})`
+        ) : (
+            `url(${defaultThumbnail})`
         )
-    }else{
-        return (
-            <main className="bb-board-view__main">
-                <section className="bb-board-view__hero-section" style={{backgroundImage: `url(${thumbnailImageState})`}}>
-                    <div className="bb-board-view__hero-section-title-wrapper">
-                        <h1>{listData?.title}</h1>
-                        <div className="bb-board-view__subtitle">
-                            {/* {listData?.subTitle} */}
-                        </div>
-                    </div>
-                </section>
-                <section className="bb-board-view__article-section">
-                    <article className="bb-board-view__article tui-editor-contents" dangerouslySetInnerHTML={{__html: listData.contents}}></article>
-                </section>
-                <section className="bb-board-view__buttons-section">
-                    <ul className="bb-board-view__update-btns">
-                        <li>
-                            <button>
-                                <Link to={`/board/write/${props.match?.params.id}`}>
-                                    <BsPencilSquare className="bb-board-view__pencil-icon" />
-                                </Link>
-                            </button>
-                        </li>
-                        <li>
-                            <button onClick={handleDelete}>
-                                <BsTrash className="bb-board-view__tresh-icon" />
-                            </button>
-                        </li>
-                    </ul>
-                </section>
-            </main>
-        );
     }
 
-    
+    useEffect(()=>{
+        if(deleteBoardListResult.data){
+            onCloseModal(); 
+            props.history.push('/board');
+        }
+    }, [deleteBoardListResult.data])
 
+    useEffect(()=>{
+        getBoardList({
+            variables: {
+                id: boardId
+            }
+        })
+        window.scrollTo(0, 0);
+    }, []);
 
+    if(getBoardListResult.error){
+        return <main className="bb-board-view__main"></main>;
+    }
+
+    return (
+        <main className="bb-board-view__main">
+            <section className="bb-board-view__hero-section" style={backgroundImageStyle}>
+                <div className="bb-board-view__hero-section-title-wrapper">
+                    <h1>{getBoardListResult.data?.boardList.title}</h1>
+                    <div className="bb-board-view__subtitle"></div>
+                </div>
+            </section>
+            <section className="bb-board-view__article-section">
+                {getBoardListResult.data && (
+                    <article className="bb-board-view__article tui-editor-contents" dangerouslySetInnerHTML={{__html: getBoardListResult.data.boardList.contents}}></article>
+                )}       
+            </section>
+            <section className="bb-board-view__buttons-section">
+                <ul className="bb-board-view__update-btns">
+                    <li>
+                        <button>
+                            <Link to={`/board/write/${props.match?.params.id}`}>
+                                <BsPencilSquare className="bb-board-view__pencil-icon" />
+                            </Link>
+                        </button>
+                    </li>
+                    <li>
+                        <button onClick={handleDelete}>
+                            <BsTrash className="bb-board-view__tresh-icon" />
+                        </button>
+                    </li>
+                </ul>
+            </section>
+        </main>
+    );
     
 }
 

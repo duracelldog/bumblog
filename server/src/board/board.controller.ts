@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
-import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { Body, Controller, Delete, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { BoardService } from './board.service';
 import {diskStorage} from 'multer';
 import { extname, resolve } from 'path';
@@ -30,47 +30,14 @@ export class BoardController {
     }
 
     @Delete('upload')
-    deleteFiles(@Body('boardId') boardId: string, @Body('boardImageIds') boardImageIds: string){
-        console.log("boardId", boardId)
-        console.log("boardImageIds", boardImageIds)
-        return this.boardService.deleteBoardImage(+boardId, boardImageIds.split(','));
+    deleteFiles(@Body('id') id: string, @Body('t_file') t_file: string, @Body('c_files') c_files: string){
+
+        const viewData = {
+            id: id,
+            t_file: JSON.parse(t_file),
+            c_files: JSON.parse(c_files)
+        }
+
+        this.boardService.compareFilesAndDelete(viewData);
     }
-
-    // files [Object: null prototype] {
-    //     [1]   t_file: [
-    //     [1]     {
-    //     [1]       fieldname: 't_file',
-    //     [1]       originalname: 'hero-image.jpg',
-    //     [1]       encoding: '7bit',
-    //     [1]       mimetype: 'image/jpeg',
-    //     [1]       destination: '/Users/beomgeunshin/Desktop/bumblog/server/public/images/board',
-    //     [1]       filename: '40e81381e2bffe1b999db4f041f9f841.jpg',
-    //     [1]       path: '/Users/beomgeunshin/Desktop/bumblog/server/public/images/board/40e81381e2bffe1b999db4f041f9f841.jpg',
-    //     [1]       size: 1128559
-    //     [1]     }
-    //     [1]   ],
-    //     [1]   c_files: [
-    //     [1]     {
-    //     [1]       fieldname: 'c_files',
-    //     [1]       originalname: 'hero-image-2.jpg',
-    //     [1]       encoding: '7bit',
-    //     [1]       mimetype: 'image/jpeg',
-    //     [1]       destination: '/Users/beomgeunshin/Desktop/bumblog/server/public/images/board',
-    //     [1]       filename: '483bcafec5b5925586850dafb993a619.jpg',
-    //     [1]       path: '/Users/beomgeunshin/Desktop/bumblog/server/public/images/board/483bcafec5b5925586850dafb993a619.jpg',
-    //     [1]       size: 8688040
-    //     [1]     },
-    //     [1]     {
-    //     [1]       fieldname: 'c_files',
-    //     [1]       originalname: 'hero-image.jpg',
-    //     [1]       encoding: '7bit',
-    //     [1]       mimetype: 'image/jpeg',
-    //     [1]       destination: '/Users/beomgeunshin/Desktop/bumblog/server/public/images/board',
-    //     [1]       filename: '48fe18aafb8216f0b228aeb85eed4dc9.jpg',
-    //     [1]       path: '/Users/beomgeunshin/Desktop/bumblog/server/public/images/board/48fe18aafb8216f0b228aeb85eed4dc9.jpg',
-    //     [1]       size: 1128559
-    //     [1]     }
-    //     [1]   ]
-    //     [1] }
-
 }

@@ -4,25 +4,6 @@ import {Link} from 'react-router-dom';
 import {BsPencilSquare} from 'react-icons/bs';
 import { gql, useQuery } from '@apollo/client';
 
-export type boardListType = {
-    id: string;
-    title: string;
-    tags: string;
-    contents: string;
-    createdAt: Date;
-    updatedAt: Date;
-    user: {
-        name: string;
-    }
-    t_originalName: string;
-    t_fileName: string;
-    boardImages: boardImagesType[];
-}
-export type boardImagesType = {
-    originalname: string;
-    filename: string;
-}
-
 const GET_LISTS = gql`
     query GetBoardLists($target: String, $word: String, $limit: Int) {
         boardLists(target: $target, word: $word, limit: $limit){
@@ -38,7 +19,28 @@ const GET_LISTS = gql`
     }
 `;
 
-type ArgumentsType = {
+export type boardListType = {
+    id: string;
+    title: string;
+    tags: string;
+    contents: string;
+    createdAt: Date;
+    updatedAt: Date;
+    userId: number;
+    user: {
+        name: string;
+    }
+    t_originalName: string;
+    t_fileName: string;
+    boardImages: boardImagesType[];
+}
+export type boardImagesType = {
+    id: number;
+    originalName: string;
+    fileName: string;
+}
+
+type argumentsType = {
     target: string;
     word: string;
     limit: number;
@@ -46,10 +48,9 @@ type ArgumentsType = {
 
 
 function BoardHome(){
-    const [boardList, setBoardList] = useState<boardListType[]>([]);
-    const [listArgs, setListArgs] = useState<ArgumentsType>();
+    const [listArgs, setListArgs] = useState<argumentsType>();
 
-    const {loading, data, refetch} = useQuery(GET_LISTS, {
+    const getListResult = useQuery<{boardLists: boardListType[]}>(GET_LISTS, {
         variables: listArgs,
         notifyOnNetworkStatusChange: true
     });
@@ -72,14 +73,8 @@ function BoardHome(){
     }
 
     useEffect(()=>{
-        refetch();
+        getListResult.refetch();
     }, [listArgs])
-
-    useEffect(()=>{
-        if(!loading && data){
-            setBoardList(data.boardLists)
-        }
-    }, [loading])
 
     useEffect(()=>{
         window.scrollTo(0, 0);
@@ -118,7 +113,7 @@ function BoardHome(){
             </section>
             <section className="bb-board-home__list-section">
                 <ul className="bb-board-home__list-ul-tag">
-                    {boardList.map(list => <BoardList key={list.id} data={list} />)}
+                    {getListResult.data?.boardLists.map(list => <BoardList key={list.id} data={list} />)}
                 </ul>
             </section>
             

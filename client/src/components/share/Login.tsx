@@ -1,18 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import {RouteChildrenProps} from 'react-router-dom';
+import {Redirect, RouteChildrenProps} from 'react-router-dom';
 import useAuth from '../../redux/hooks/useAuth';
 import { gql, useMutation } from '@apollo/client';
 
-type CreateUserInput = {
-    email: string;
-    password: string;
-    name: string;
-}
 
 const LOGIN = gql`
     mutation Login($email: String!, $password: String!){
         login(email: $email, password: $password){
+            id
             email
             name
         }
@@ -21,23 +17,29 @@ const LOGIN = gql`
 const CREATE_USER = gql`
   mutation CreateUser($userData: CreateUserInput!){
       createUser(userData: $userData){
+        id
         email
         name
       }
   }  
 `;
 
+type userType = {
+    id: number;
+    email: string;
+    password: string;
+    name: string;
+    admin: number;
+}
 
 type ParamsType = {
     redirect: string;
 }
 function Login(props : RouteChildrenProps<ParamsType>){
 
-    const [login, loginResult] = useMutation(LOGIN);
-    const [createUser, createUserResult] = useMutation<{
-        createUser: CreateUserInput,
-        userData: CreateUserInput
-    }>(CREATE_USER);
+    const {authState, onLogin} = useAuth();
+    const [login, loginResult] = useMutation<{login: userType}>(LOGIN);
+    const [createUser, createUserResult] = useMutation<{createUser: userType}>(CREATE_USER);
 
     const [userInfoState, setUserInfoState] = useState({
         email: '',
@@ -52,8 +54,6 @@ function Login(props : RouteChildrenProps<ParamsType>){
         setModeState(targetMode);
         toggleBarRef.current?.classList.toggle('on');
     }
-
-    const {onLogin} = useAuth();
 
     const setLoginState = (e: React.ChangeEvent<HTMLInputElement>) =>{
 
@@ -95,8 +95,9 @@ function Login(props : RouteChildrenProps<ParamsType>){
     }
 
      useEffect(()=> { // 로그인
-        if(!loginResult.loading && loginResult.data){
+        if(loginResult.data){
 
+            console.log("loginResult.data.login", loginResult.data.login);
             onLogin(loginResult.data.login);
 
             if(redirctState === ''){
@@ -105,10 +106,10 @@ function Login(props : RouteChildrenProps<ParamsType>){
                 props.history.push(redirctState);
             }
         }
-    }, [loginResult.loading]);
+    }, [loginResult.data]);
 
     useEffect(()=> { // 신규 가입
-        if(!createUserResult.loading && createUserResult.data){
+        if(createUserResult.data){
 
             onLogin(createUserResult.data.createUser);
             
@@ -118,7 +119,7 @@ function Login(props : RouteChildrenProps<ParamsType>){
                 props.history.push(redirctState);
             }
         }
-    }, [createUserResult.loading]);
+    }, [createUserResult.data]);
 
     useEffect(()=>{
         const redirectValue = new URLSearchParams(document.location.search).get('redirect')
@@ -133,15 +134,9 @@ function Login(props : RouteChildrenProps<ParamsType>){
 
     }, []);
 
-    // useEffect(()=>{
-    //     if(authState.email !== "" && redirctState !== ""){
-    //         props.history.push(redirctState);
-    //     }
-    // }, [authState]);
-
-    // Sign In 로그인
-    // Sign Up 가입
-    // Sign Out 로그아웃
+    if(authState.id){
+        return <Redirect to={`/`} />;
+    }
 
     return (
         <main className="bb-login__main">
@@ -166,6 +161,9 @@ function Login(props : RouteChildrenProps<ParamsType>){
             </form>
         </main>
     )
+    
+
+    
 }
 
 export default Login;

@@ -8,34 +8,8 @@ import Header from './components/share/Header';
 import Login from './components/share/Login';
 import Modal from './components/share/Modal';
 import './App.scss';
-import { gql, useMutation } from '@apollo/client';
-import useAuth from './redux/hooks/useAuth';
-
-const GET_PROFILE = gql`
-  mutation GetProfile{
-    getProfile{
-      id
-      email
-      name
-    }
-  }
-`;
 
 function App() {
-
-  const {onLogin} = useAuth();
-  const [getProfile, GPResult] = useMutation(GET_PROFILE);
-
-  useEffect(()=>{
-    if(!GPResult.loading && GPResult.data){
-      onLogin(GPResult.data.getProfile);
-    }
-  }, [GPResult.loading]);
-
-  useEffect(()=>{
-    getProfile();
-  }, []);
-
   return (
     <div className="bb-body">
       <BrowserRouter>

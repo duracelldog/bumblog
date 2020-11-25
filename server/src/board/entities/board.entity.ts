@@ -42,7 +42,7 @@ export class Board{
     @Column()
     t_fileName: string;
 
-    @Field(type => User)
+    @Field(type => User, {nullable: true})
     @ManyToOne(() => User, user => user.board, {
         onDelete: 'CASCADE'
     })

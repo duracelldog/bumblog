@@ -29,7 +29,7 @@ type Board {
   updatedAt: DateTime
   t_originalName: String
   t_fileName: String
-  user: User!
+  user: User
   boardImages: [BoardImage!]
 }
 
@@ -65,7 +65,7 @@ type Query {
 
 type Mutation {
   boardList(id: Int!): Board
-  createBoardList(boardData: CreateBoardInput!): Boolean!
+  createBoardList(boardData: CreateBoardInput!): Board!
   updateBoardList(boardData: UpdateBoardInput!): Boolean!
   deleteBoardList(id: Int!): Boolean!
   login(password: String!, email: String!): UserModel!

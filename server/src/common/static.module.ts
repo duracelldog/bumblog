@@ -11,6 +11,9 @@ console.log('sfdfsdsdf', resolve('./public'))
         ServeStaticModule.forRoot({
             rootPath: resolve('./public'),
             serveRoot: resolve('/public'),
+            serveStaticOptions: {
+                index: false
+            }
         }),
     ]
 })
