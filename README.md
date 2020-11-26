@@ -18,6 +18,8 @@
   
 ##### Back-End
 * nestJS
+* apollo-server-express
+* typeorm
   
 ##### DataBase
 * MySQL 
